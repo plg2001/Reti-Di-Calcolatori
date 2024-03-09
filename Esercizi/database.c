@@ -4,6 +4,12 @@
 
 
 int main(){
-    Database* D = create_database();
+    Persona* p1 = create_Persona("Pierluca","Grasso","Via della Grotta 121",22); 
+    Persona* p2 = create_Persona("Maurzio","Bellissimo","Via dell pisllo",557); 
+    Database* D = create_database(p1);
+
+    insert(D,p2);
+    Persona* ris = findByName(D,p2->name);
+    printf("%s",ris->address);
 
 }

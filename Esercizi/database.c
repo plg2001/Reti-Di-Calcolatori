@@ -9,7 +9,7 @@ int main(){
     Database* D = create_database(p1);
 
     insert(D,p2);
-    Persona* ris = findByName(D,p2->name);
-    printf("%s",ris->address);
-
+    Persona* risultato = findByAge(D,p2->age);
+    printf("%s",risultato->surname);
+    
 }

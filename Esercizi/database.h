@@ -125,6 +125,32 @@ void insert_inorder_int(IndexNodeInt* TreeInt ,int value,Persona* persona){
 
 
 }
+
+Persona* find_in_order(IndexNodeString* TreeString,char* key){
+    if (TreeString == NULL) return NULL;
+
+    if(strcmp(TreeString->value,key) == 0) return TreeString->persona;
+
+    if(strcmp(key,TreeString->value) <= 0){
+        return find_in_order(TreeString->left,key);
+    }
+
+    else return find_in_order(TreeString->right,key);
+    
+}
+Persona* find_in_order_int(IndexNodeInt* TreeInt,int key){
+    if (TreeInt == NULL) return NULL;
+
+    if(TreeInt->value == key) return TreeInt->persona;
+
+    if(key <= TreeInt->value){
+        return find_in_order_int(TreeInt->left,key);
+    }
+
+    else return find_in_order_int(TreeInt->right,key);
+    
+}
+
 void insert(Database * database, Persona * persona){
     if( database == NULL || persona == NULL){
         return;
@@ -142,12 +168,36 @@ void insert(Database * database, Persona * persona){
 
 }
 Persona* findByName(Database * database, char * name){
+    Persona * ris = find_in_order(database->name,name);
+    if(ris ==  NULL) {
+        printf("Non Trovato\n"); 
+        return NULL;
+    }
+    return ris;
+  
 }
-Persona* findBySurname(Database * database, char * surname);
-Persona* findByAddress(Database * database, char * address);
+Persona* findBySurname(Database * database, char * surname){
+    Persona * ris = find_in_order(database->surname,surname);
+    if(ris ==  NULL) {
+        printf("Non Trovato\n"); 
+        return NULL;
+    }
+    return ris;
+}
+Persona* findByAddress(Database * database, char * address){
+   Persona * ris = find_in_order(database->address,address);
+    if(ris ==  NULL) {
+        printf("Non Trovato\n"); 
+        return NULL;
+    }
+    return ris;
+}
 Persona* findByAge(Database * database, int age){
-    if(database->age->right->value == age) return database->age->right->persona;
-    printf("Non trovato");
-    return NULL;
+   Persona * ris = find_in_order_int(database->age,age);
+    if(ris ==  NULL) {
+        printf("Non Trovato\n"); 
+        return NULL;
+    }
+    return ris; 
 }
 

@@ -49,7 +49,7 @@ int main() {
        
     // Invio del messaggio al server
     if (sendto(client_socket, &pack, strlen(buffer), 0, (struct sockaddr*)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Errore nell'invio del messaggio al server");
+         perror("Errore nell'invio del messaggio al server");
         exit(EXIT_FAILURE);
     }
 

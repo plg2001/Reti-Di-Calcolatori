@@ -71,7 +71,10 @@ void handle_client(int client_socket) {
         //Parsing
 
         //printf("Received string from client %d: %s", client_socket, strings[client_socket]);
-
+  // Stampa dei token ottenuti
+    for (int j = 0; j < i; j++) {
+        printf("Token %d: %s\n", j, buffer_parsed[j]);
+    }
         /*
         ssize_t bytes_sent = send(client_socket, response, strlen(response), 0);
         if (bytes_sent < 0) {

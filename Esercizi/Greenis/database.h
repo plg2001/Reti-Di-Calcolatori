@@ -6,98 +6,29 @@ typedef struct {
 }Record;
 
 typedef struct {
-    Record* nodo;
+    Record* Node;
     struct Database* left;
     struct Database* right;
 } Database;
 
 // TODO implement the following methods
 // The method return a Persona or NULL 
-Persona* create_Persona( char* name,char* surname,char* address,int age){
-    Persona* p = malloc(sizeof(Persona));
-    p->age = age;
-    strncpy(p->name,name,strlen(name));
-    strncpy(p->surname,surname,strlen(surname));
-    strncpy(p->address,address,strlen(address));
-    return p;
+Record* create_Record( char* key,char* value){
+    Record* r = malloc(sizeof(Record));
+    strncpy(r->key,key,strlen(key));
+    strncpy(r->value,value,strlen(value));
+    return r;
 }
 
-IndexNodeString* create_NodeStr(char* value,Persona* Persona){
-    IndexNodeString* ris = malloc(sizeof(IndexNodeString));
-    ris->value = value;
-    ris->left = NULL;
-    ris->right = NULL;
-    ris->persona = Persona;
-    return ris;
-}
-Database* create_database(Persona* persona){
+Database* create_database(){
     Database* D = malloc(sizeof(Database));
-    D->address = create_NodeStr(persona->address,persona);
-    D->name = create_NodeStr(persona->name,persona);
-    D->surname = create_NodeStr(persona->surname,persona);
-    D->age = create_NodeInt(persona->age,persona);
+    D->Node = NULL;
+    D->left = NULL;
+    D->right = NULL;
     return D;
 }
 
 
-void insert_inorder(IndexNodeString* TreeString ,char* value,Persona* persona){
-    if(TreeString == NULL){
-        return;
-    }
-
-    if(strcmp(value,TreeString->value) <= 0){
-        if(TreeString->left == NULL){
-        
-            IndexNodeString * new = create_NodeStr(value,persona);
-            TreeString->left = new;
-            return;
-        }
-        
-        insert_inorder(TreeString->left,value,persona);
-        return;
-    }
-
-    if(strcmp(value,TreeString->value) > 0){
-        if(TreeString->right == NULL){
-            IndexNodeString * new = create_NodeStr(value,persona);
-            TreeString->right = new;
-            return;
-        }
-        insert_inorder(TreeString->right,value,persona);
-        return;  
-    }
-
-
-}
-
-void insert_inorder_int(IndexNodeInt* TreeInt ,int value,Persona* persona){
-    if(TreeInt == NULL){
-        return;
-    }
-
-    if(value <= TreeInt->value){
-        if(TreeInt->left == NULL){
-            IndexNodeInt * new = create_NodeInt(value,persona);
-            TreeInt->left = new;
-            return;
-        }
-        
-        insert_inorder_int(TreeInt->left,value,persona);
-        return;
-    }
-
-    if(value > TreeInt->value){
-        if(TreeInt->right == NULL){
-            IndexNodeInt * new = create_NodeInt(value,persona);
-            TreeInt->right = new;
-            return;
-        }
-        insert_inorder_int(TreeInt->right,value,persona);
-        return;  
-    }
-
-
-}
 
 Persona* find_in_order(IndexNodeString* TreeString,char* key){
     if (TreeString == NULL) return NULL;
@@ -124,19 +55,33 @@ Persona* find_in_order_int(IndexNodeInt* TreeInt,int key){
     
 }
 
-void insert(Database * database, Persona * persona){
-    if( database == NULL || persona == NULL){
+void set(Database * database, Record * record){
+    if( database == NULL || record == NULL){
         return;
     }
 
-    // Insert ByName
-    insert_inorder(database->name,persona->name,persona);
-    // Insert BySurname
-    insert_inorder(database->surname,persona->surname,persona);
-    //Insert ByAddress
-    insert_inorder(database->address,persona->address,persona);
-    //Insert ByInt
-    insert_inorder_int(database->age,persona->age,persona);
+
+    if(strcmp(value,TreeString->value) <= 0){
+        if(TreeString->left == NULL){
+        
+            IndexNodeString * new = create_NodeStr(value,persona);
+            TreeString->left = new;
+            return;
+        }
+        
+        insert_inorder(TreeString->left,value,persona);
+        return;
+    }
+
+    if(strcmp(value,TreeString->value) > 0){
+        if(TreeString->right == NULL){
+            IndexNodeString * new = create_NodeStr(value,persona);
+            TreeString->right = new;
+            return;
+        }
+        insert_inorder(TreeString->right,value,persona);
+        return;  
+    }
 
 
 }

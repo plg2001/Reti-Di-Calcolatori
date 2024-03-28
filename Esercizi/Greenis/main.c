@@ -9,34 +9,77 @@
 
 #define PORT 7379
 #define MAX_CONNECTIONS 10
-#define MAX_BUFFER_SIZE 8192
+#define MAX_BUFFER_SIZE 4096
+#define MAX_SIZE 1024 
 
 char strings[MAX_CONNECTIONS][MAX_BUFFER_SIZE];
 
+
+
 void handle_client(int client_socket) {
     char buffer[MAX_BUFFER_SIZE];
+    char message_ok[] = "+OK\r\n";
+    char message_not_ok[] = "$-1\r\n";
+    char message_connection_client1[] = "*4\r\n$6\r\nCLIENT\r\n$7\r\nSETINFO\r\n$8\r\nLIB-NAME\r\n$8\r\nredis-py\r\n";
+    char message_connection_client2[] = "*4\r\n$6\r\nCLIENT\r\n$7\r\nSETINFO\r\n$7\r\nLIB-VER\r\n$5\r\n5.0.3\r\n";
     ssize_t bytes_received;
 
-    bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
-    if (bytes_received < 0) {
-        perror("recv");
-        close(client_socket);
-        exit(EXIT_FAILURE);
+    while (1){
+        memset(buffer,0,MAX_BUFFER_SIZE);
+
+        bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
+        if (bytes_received < 0) {
+            perror("recv");
+            close(client_socket);
+            exit(EXIT_FAILURE);
+        }
+
+        // Copy received string to strings array
+        strncpy(strings[client_socket], buffer, sizeof(strings[client_socket]));
+        
+        //Setup connetion
+        if(strcmp(strings[client_socket],message_connection_client1) == 0 ){
+            ssize_t bytes_sent = send(client_socket, message_ok, strlen(message_ok), 0);
+            continue;
+            if (bytes_sent < 0) {
+                perror("send");
+                close(client_socket);
+                exit(EXIT_FAILURE);
+            }
+        }
+         if(strcmp(strings[client_socket],message_connection_client2) == 0 ){
+            ssize_t bytes_sent = send(client_socket, message_ok, strlen(message_ok), 0);
+            continue;
+            if (bytes_sent < 0) {
+                perror("send");
+                close(client_socket);
+                exit(EXIT_FAILURE);
+            }
+        }
+        
+
+
+        //Extract Token
+        int i = 0;
+        char  buffer_parsed[MAX_SIZE][MAX_BUFFER_SIZE];
+        char *token = strtok(buffer, "\r\n");
+        while (token != NULL) {
+            strcpy(buffer_parsed[i++],token);
+            token = strtok(NULL, "\r\n");
+        }
+        
+        //Parsing
+
+        //printf("Received string from client %d: %s", client_socket, strings[client_socket]);
+
+        /*
+        ssize_t bytes_sent = send(client_socket, response, strlen(response), 0);
+        if (bytes_sent < 0) {
+            perror("send");
+            close(client_socket);
+            exit(EXIT_FAILURE);
+        }*/
     }
-
-    // Copy received string to strings array
-    strncpy(strings[client_socket], buffer, sizeof(strings[client_socket]));
-
-    printf("Received string from client %d: %s", client_socket, strings[client_socket]);
-
-    const char *response = "+OK\r\n";
-    ssize_t bytes_sent = send(client_socket, response, strlen(response), 0);
-    if (bytes_sent < 0) {
-        perror("send");
-        close(client_socket);
-        exit(EXIT_FAILURE);
-    }
-
     close(client_socket);
     exit(EXIT_SUCCESS);
 }
@@ -89,7 +132,6 @@ int main() {
             exit(EXIT_FAILURE);
         } else if (child_pid == 0) {
             // Child process
-             // Close server socket in child process
             handle_client(client_socket);
         } else {
             // Parent process

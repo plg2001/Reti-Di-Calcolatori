@@ -5,11 +5,11 @@ typedef struct {
    char value[50];
 }Record;
 
-typedef struct {
-    Record* Node;
-    struct Database* left;
-    struct Database* right;
-} Database;
+typedef struct Node {
+    Record* data;
+    struct Node* left;
+    struct Node* right;
+} Node;
 
 // TODO implement the following methods
 // The method return a Persona or NULL 
@@ -20,17 +20,18 @@ Record* create_Record( char* key,char* value){
     return r;
 }
 
-Database* create_database(){
-    Database* D = malloc(sizeof(Database));
-    D->Node = NULL;
-    D->left = NULL;
-    D->right = NULL;
-    return D;
+Node* create_Node(Record* data){
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->data = data;
+    newNode->left = NULL;
+    newNode->right = NULL;
+    return newNode;
+
 }
 
 
 
-Persona* find_in_order(IndexNodeString* TreeString,char* key){
+/*Persona* find_in_order(IndexNodeString* TreeString,char* key){
     if (TreeString == NULL) return NULL;
 
     if(strcmp(TreeString->value,key) == 0) return TreeString->persona;
@@ -54,38 +55,39 @@ Persona* find_in_order_int(IndexNodeInt* TreeInt,int key){
     else return find_in_order_int(TreeInt->right,key);
     
 }
-
-void set(Database * database, Record * record){
-    if( database == NULL || record == NULL){
+*/
+void set(Node* Database, Record * data){
+    if( Database == NULL || data == NULL){
         return;
     }
 
-
-    if(strcmp(value,TreeString->value) <= 0){
-        if(TreeString->left == NULL){
-        
-            IndexNodeString * new = create_NodeStr(value,persona);
-            TreeString->left = new;
-            return;
-        }
-        
-        insert_inorder(TreeString->left,value,persona);
+    if(Database->data == NULL ){
+        Database->data = data;
         return;
     }
 
-    if(strcmp(value,TreeString->value) > 0){
-        if(TreeString->right == NULL){
-            IndexNodeString * new = create_NodeStr(value,persona);
-            TreeString->right = new;
+    if(strcmp(data->key,Database->data->key) <= 0){
+        if(Database->left == NULL){
+            Database->left = create_Node(data);
             return;
         }
-        insert_inorder(TreeString->right,value,persona);
+        
+        set(Database->left,data);
+        return;
+    }
+
+    if(strcmp(data->key,Database->data->key) > 0){
+        if(Database->right == NULL){
+            Database->right = create_Node(data);
+            return;
+        }
+        set(Database->right,data);
         return;  
     }
 
 
 }
-Persona* findByName(Database * database, char * name){
+/*Persona* findByName(Database * database, char * name){
     Persona * ris = find_in_order(database->name,name);
     if(ris ==  NULL) {
         printf("Non Trovato\n"); 
@@ -117,5 +119,50 @@ Persona* findByAge(Database * database, int age){
         return NULL;
     }
     return ris; 
+}
+*/
+
+
+Node* minValueNode(Node* node) {
+    Node* current = node;
+
+    // Trova il nodo più a sinistra
+    while (current && current->left != NULL)
+        current = current->left;
+
+    return current;
+}
+
+Node* deleteNode(Node* root, char* key) {
+    if (root == NULL) return root;
+
+    // Trova il nodo da eliminare
+    int cmp = strcmp(key, root->data->key);
+    if (cmp < 0)
+        root->left = deleteNode(root->left, key);
+    else if (cmp > 0)
+        root->right = deleteNode(root->right, key);
+    else {
+        // Se il nodo ha uno o nessun figlio
+        if (root->left == NULL) {
+            Node* temp = root->right;
+            free(root);
+            return temp;
+        } else if (root->right == NULL) {
+            Node* temp = root->left;
+            free(root);
+            return temp;
+        }
+
+        // Se il nodo ha due figli, prendi il successore in ordine (nodo più piccolo nell'albero destro)
+        Node* temp = minValueNode(root->right);
+
+        // Copia il contenuto del successore in ordine in questo nodo
+        root->data = temp->data;
+
+        // Elimina il successore in ordine
+        root->right = deleteNode(root->right, temp->data->key);
+    }
+    return root;
 }
 

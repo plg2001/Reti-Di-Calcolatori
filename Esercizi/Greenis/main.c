@@ -12,28 +12,30 @@
 #define MAX_CONNECTIONS 10
 #define MAX_BUFFER_SIZE 4096
 #define MAX_SIZE 1024 
+#define MESSAGE_OK "+OK\r\n"
+#define MESSAGE_NOT_OK "$-1\r\n"
 
 char strings[MAX_CONNECTIONS][MAX_BUFFER_SIZE];
 
-typedef struct {
-   char key[50];
-   char value[50];
-}Record;
-
-
-void set_record(Record* database,char* key,char* value){
-    
+void set_record(int client_socket,Node* database,char* key,char* value){
+    Record * record = create_Record(key,value);
+    set(database,record);
+    ssize_t bytes_sent = send(client_socket, MESSAGE_OK, strlen(MESSAGE_OK), 0);
+    if (bytes_sent < 0) {
+        perror("send");
+        close(client_socket);
+        exit(EXIT_FAILURE);
+    }
 }
 
-void handle_client(int client_socket,Record* database) {
+void handle_client(int client_socket,Node* database) {
     char buffer[MAX_BUFFER_SIZE];
-    char message_ok[] = "+OK\r\n";
-    char message_not_ok[] = "$-1\r\n";
     char message_connection_client1[] = "*4\r\n$6\r\nCLIENT\r\n$7\r\nSETINFO\r\n$8\r\nLIB-NAME\r\n$8\r\nredis-py\r\n";
     char message_connection_client2[] = "*4\r\n$6\r\nCLIENT\r\n$7\r\nSETINFO\r\n$7\r\nLIB-VER\r\n$5\r\n5.0.3\r\n";
     ssize_t bytes_received;
 
     while (1){
+        
         memset(buffer,0,MAX_BUFFER_SIZE);
 
         bytes_received = recv(client_socket, buffer, sizeof(buffer), 0);
@@ -48,7 +50,7 @@ void handle_client(int client_socket,Record* database) {
         
         //Setup connetion
         if(strcmp(strings[client_socket],message_connection_client1) == 0 ){
-            ssize_t bytes_sent = send(client_socket, message_ok, strlen(message_ok), 0);
+            ssize_t bytes_sent = send(client_socket, MESSAGE_OK, strlen(MESSAGE_OK), 0);
             continue;
             if (bytes_sent < 0) {
                 perror("send");
@@ -57,7 +59,7 @@ void handle_client(int client_socket,Record* database) {
             }
         }
          if(strcmp(strings[client_socket],message_connection_client2) == 0 ){
-            ssize_t bytes_sent = send(client_socket, message_ok, strlen(message_ok), 0);
+            ssize_t bytes_sent = send(client_socket, MESSAGE_OK, strlen(MESSAGE_OK), 0);
             continue;
             if (bytes_sent < 0) {
                 perror("send");
@@ -70,6 +72,11 @@ void handle_client(int client_socket,Record* database) {
         int i = 0;
         char  tokens[MAX_SIZE][MAX_BUFFER_SIZE];
         char *token = strtok(buffer, "\r\n");
+
+        for (int i = 0; i < MAX_SIZE; i++)
+        {
+            memset(tokens[i],0,MAX_BUFFER_SIZE);
+        }
         while (token != NULL) {
             strcpy(tokens[i++],token);
             token = strtok(NULL, "\r\n");
@@ -80,23 +87,16 @@ void handle_client(int client_socket,Record* database) {
         if(strcmp(tokens[2],"SET") == 0 ){
             char* key = tokens[4];
             char* value = tokens[6]; 
-            set_record(database,key,value);
+            set_record(client_socket,database,key,value);
         }
 
+        //Parsing GET
+
+        
         //printf("Received string from client %d: %s", client_socket, strings[client_socket]);
-
-
-        /*
-
-
-
-        ssize_t bytes_sent = send(client_socket, response, strlen(response), 0);
-        if (bytes_sent < 0) {
-            perror("send");
-            close(client_socket);
-            exit(EXIT_FAILURE);
-        }*/
     }
+
+
     close(client_socket);
     exit(EXIT_SUCCESS);
 }
@@ -107,9 +107,10 @@ int main() {
     socklen_t client_addr_len = sizeof(client_addr);
     pid_t child_pid;
 
-
  
-   
+    Node* database = create_Node(NULL);
+
+  
     // Create server socket
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0) {

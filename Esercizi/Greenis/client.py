@@ -8,7 +8,7 @@ r = redis.Redis(host="127.0.0.1", port=7379)
 
 print(r.set("forever", "value"))
 
-print(r.set("key", "value", ex=10))
+#print(r.set("key", "value", ex=10))
 
 #for i in range(12):
  #   print(r.get("key"))

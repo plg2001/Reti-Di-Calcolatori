@@ -1,34 +1,14 @@
 #include <string.h>
 // This represent a record in the only schema of this database
 typedef struct {
-    char name[20];
-    char surname[50];
-    char address[100];
-    int age;
-}Persona;
+   char key[50];
+   char value[50];
+}Record;
 
-// This is a node of an index that hold a string
-typedef struct IndexNodeString {
-    char * value;
-    struct IndexNodeString * left;
-    struct IndexNodeString * right;
-    Persona* persona;
-} IndexNodeString;
-
-// This is a node of an index that hold an int
-typedef struct IndexNodeInt {
-    int value;
-    struct IndexNodeInt * left;
-    struct IndexNodeInt * right;
-    Persona* persona;
-} IndexNodeInt;
-
-// A database hold a set of records and a set of indexes
 typedef struct {
-    IndexNodeString * name;
-    IndexNodeString * surname;
-    IndexNodeString * address;
-    IndexNodeInt * age;
+    Record* nodo;
+    struct Database* left;
+    struct Database* right;
 } Database;
 
 // TODO implement the following methods
@@ -41,14 +21,7 @@ Persona* create_Persona( char* name,char* surname,char* address,int age){
     strncpy(p->address,address,strlen(address));
     return p;
 }
-IndexNodeInt* create_NodeInt(int value,Persona* Persona){
-    IndexNodeInt* ris = malloc(sizeof(IndexNodeInt));
-    ris->value = value;
-    ris->left = NULL;
-    ris->right = NULL;
-    ris->persona = Persona;
-    return ris;
-}
+
 IndexNodeString* create_NodeStr(char* value,Persona* Persona){
     IndexNodeString* ris = malloc(sizeof(IndexNodeString));
     ris->value = value;

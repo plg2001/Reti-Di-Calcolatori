@@ -4,7 +4,7 @@ import time
 r = redis.Redis(host="127.0.0.1", port=7379)
 
 
-print(r.get("forever"))
+#print(r.get("forever"))
 
 print(r.set("forever", "value"))
 

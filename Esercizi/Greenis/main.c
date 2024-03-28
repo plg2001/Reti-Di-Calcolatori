@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include "database.h"
 
 #define PORT 7379
 #define MAX_CONNECTIONS 10
@@ -14,9 +15,17 @@
 
 char strings[MAX_CONNECTIONS][MAX_BUFFER_SIZE];
 
+typedef struct {
+   char key[50];
+   char value[50];
+}Record;
 
 
-void handle_client(int client_socket) {
+void set_record(Record* database,char* key,char* value){
+    
+}
+
+void handle_client(int client_socket,Record* database) {
     char buffer[MAX_BUFFER_SIZE];
     char message_ok[] = "+OK\r\n";
     char message_not_ok[] = "$-1\r\n";
@@ -57,25 +66,30 @@ void handle_client(int client_socket) {
             }
         }
         
-
-
-        //Extract Token
+       //Tokenizzazione
         int i = 0;
-        char  buffer_parsed[MAX_SIZE][MAX_BUFFER_SIZE];
+        char  tokens[MAX_SIZE][MAX_BUFFER_SIZE];
         char *token = strtok(buffer, "\r\n");
         while (token != NULL) {
-            strcpy(buffer_parsed[i++],token);
+            strcpy(tokens[i++],token);
             token = strtok(NULL, "\r\n");
         }
-        
-        //Parsing
+        //for (int j = 0; j < i; j++) { printf("Token %d: %s\n", j, tokens[j]); }
+
+        //Parsing SET
+        if(strcmp(tokens[2],"SET") == 0 ){
+            char* key = tokens[4];
+            char* value = tokens[6]; 
+            set_record(database,key,value);
+        }
 
         //printf("Received string from client %d: %s", client_socket, strings[client_socket]);
-  // Stampa dei token ottenuti
-    for (int j = 0; j < i; j++) {
-        printf("Token %d: %s\n", j, buffer_parsed[j]);
-    }
+
+
         /*
+
+
+
         ssize_t bytes_sent = send(client_socket, response, strlen(response), 0);
         if (bytes_sent < 0) {
             perror("send");
@@ -93,6 +107,9 @@ int main() {
     socklen_t client_addr_len = sizeof(client_addr);
     pid_t child_pid;
 
+
+ 
+   
     // Create server socket
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket < 0) {
@@ -135,7 +152,7 @@ int main() {
             exit(EXIT_FAILURE);
         } else if (child_pid == 0) {
             // Child process
-            handle_client(client_socket);
+            handle_client(client_socket,database);
         } else {
             // Parent process
             
